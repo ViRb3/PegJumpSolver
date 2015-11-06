@@ -9,12 +9,12 @@ public class Main
 {
     public static void main(String[] args)
     {
-        PrintNewLine();
-        PrintNewLine("-----====================================-----");
-        PrintNewLine("Peg Jump Solver v1.0   ~ViR");
-        PrintNewLine("-----====================================-----");
-        PrintNewLine();
-        PrintNewLine("Size of board:");
+        System.out.println();
+        System.out.println("-----====================================-----");
+        System.out.println("Peg Jump Solver v1.1   ~ViR");
+        System.out.println("-----====================================-----");
+        System.out.println();
+        System.out.println("Size of board:");
 
         int boardSize = ReadConsoleNumber();
 
@@ -26,7 +26,7 @@ public class Main
             return;
         }
 
-        PrintNewLine("X coordinate of initial hole:");
+        System.out.println("X coordinate of initial hole:");
 
         int x = ReadConsoleNumber();
         if (x < 0)
@@ -35,7 +35,7 @@ public class Main
             return;
         }
 
-        PrintNewLine("Y coordinate of initial hole:");
+        System.out.println("Y coordinate of initial hole:");
 
         int y = ReadConsoleNumber();
         if (y < 0)
@@ -44,21 +44,21 @@ public class Main
             return;
         }
 
-        PrintNewLine("Do you want to enable verbose printing?");
+        System.out.println("Do you want to enable verbose printing?");
 
-        String debugString = ReadConsole();
-        if (debugString == null)
+        String verboseString = ReadConsole();
+        if (verboseString == null)
             return;
 
-        boolean debug = false;
+        boolean verbose = false;
 
-        if (debugString.toLowerCase().equals("y") || debugString.toLowerCase().equals("yes"))
-            debug = true;
+        if (verboseString.toLowerCase().equals("y") || verboseString.toLowerCase().equals("yes"))
+            verbose = true;
 
-        PrintNewLine();
-        PrintNewLine();
+        System.out.println();
+        System.out.println();
 
-        Run(boardSize, new Coordinates(x, y), debug);
+        Run(boardSize, new Coordinates(x, y), verbose);
     }
 
     private static int ReadConsoleNumber()
@@ -93,41 +93,41 @@ public class Main
         }
     }
 
-    private static void Run(int boardSize, Coordinates initialHole, boolean debug)
+    private static void Run(int boardSize, Coordinates initialHole, boolean verbose)
     {
-        Board board = new Board(boardSize, initialHole, debug); // zero-based coordinates
+        Board board = new Board(boardSize, initialHole, verbose); // zero-based coordinates
 
         System.out.print("ORIGINAL LAYOUT");
         PrintBoard(board);
 
         if (board.Solve())
         {
-            PrintNewLine();
+            System.out.println();
             System.out.print("SOLUTION FOUND!");
 
-            Main.PrintNewLine();
-            Main.PrintNewLine();
-            Main.PrintNewLine();
-            Main.PrintNewLine("-------------------------------");
-            Main.PrintNewLine("STEPS:");
-            Main.PrintNewLine("-------------------------------");
+            System.out.println();
+            System.out.println();
+            System.out.println();
+            System.out.println("-------------------------------");
+            System.out.println("STEPS:");
+            System.out.println("-------------------------------");
 
             PrintSteps(board);
 
-            Main.PrintNewLine();
+            System.out.println();
         }
 
-        Main.PrintNewLine();
-        PrintNewLine("BEST RUN: " + board.BestRun);
+        System.out.println();
+        System.out.println("BEST RUN: " + board.BestRun);
     }
 
     public static void PrintSteps(Board board)
     {
-        List<int[][]> getSteps = board.GetSteps();
+        List<boolean[][]> getSteps = board.GetSteps();
 
         for (int i = getSteps.size() - 1; i >= 0; i--)
         {
-            int[][] table = getSteps.get(i);
+            boolean[][] table = getSteps.get(i);
             PrintTable(table);
         }
     }
@@ -137,49 +137,49 @@ public class Main
         PrintTable(board.Table);
     }
 
-    public static void PrintTable(int[][] table)
+    public static void PrintTable(boolean[][] table)
     {
-        PrintNewLine();
+        System.out.println();
 
-        for (int[] row : table)
+        for (int i = 0; i < table.length; i++)
         {
-            for (int column : row)
+            boolean[] row = table[i];
+
+            for (int column = 0; column < row.length; column++)
             {
                 String value = " ";
 
-                if (column == 1)
-                    value = "O";
+                if (column <= i)
+                {
+                    if (row[column] == false)
+                        value = "O";
 
-                if (column == 2)
-                    value = "*";
+                    if (row[column] == true)
+                        value = "*";
+                }
 
                 System.out.print(value);
             }
 
-            PrintNewLine();
+            System.out.println();
         }
     }
 
-    public static void PrintNewLine(String text)
+    public void PrintSequence(String string, int repeats)
     {
-        System.out.print(text);
-        PrintNewLine();
+        for (int i = 0; i < repeats; i++)
+            System.out.print(string);
     }
 
-    public static void PrintNewLine()
+    public static boolean[][] Clone2DArray(boolean[][] array)
     {
-        System.out.print(System.lineSeparator());
-    }
-
-    public static int[][] Clone2DArray(int[][] array)
-    {
-        int[][] newArray = new int[array.length][];
+        boolean[][] newArray = new boolean[array.length][];
 
         for (int i = 0; i < array.length; i++)
         {
-            int[] aMatrix = array[i];
+            boolean[] aMatrix = array[i];
             int aLength = aMatrix.length;
-            newArray[i] = new int[aLength];
+            newArray[i] = new boolean[aLength];
 
             System.arraycopy(aMatrix, 0, newArray[i], 0, aLength);
         }

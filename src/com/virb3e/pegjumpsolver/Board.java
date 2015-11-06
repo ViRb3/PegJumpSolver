@@ -5,55 +5,42 @@ import java.util.List;
 
 public class Board
 {
-    public int[][] Table; // row major in Java for ease of use
+    /*
+        o
+        * *
+        * * *
+        * * * *
+        * * * * *
+     */
+    public boolean[][] Table; // row major in Java for ease of use
     public int BestRun = -1;
-    private boolean _debug = false;
-    private List<int[][]> _steps = new ArrayList<>();
+    private boolean _verbose = false;
+    private List<boolean[][]> _steps = new ArrayList<>();
 
-    public Board(int rows, Coordinates holeCoordinates, boolean debug)
+    public Board(int size, Coordinates holeCoordinates, boolean verbose)
     {
-        _debug = debug;
+        _verbose = verbose;
 
-        int columns = rows * 2;
-        Table = new int[rows][columns];
+        Table = new boolean[size][size];
 
-        int currentRowSize = columns;
+        int currentRowSize = 1;
 
-        for (int row = 0; row < rows; row++)
+        for (int row = 0; row < size; row++)
         {
-            int value = 1;
-            for (int i = columns - currentRowSize; i < currentRowSize; i++)
+            for (int i = 0; i < currentRowSize; i++)
             {
-                Table[row][i] = value;
-                value = value == 0 ? 1 : 0;
+                Table[row][i] = true;
             }
 
-            currentRowSize--;
+            currentRowSize++;
         }
 
-        FillBoard();
         MakeHole(holeCoordinates);
-    }
-
-    public void FillBoard()
-    {
-        for (int row = 0; row < Table.length; row++)
-        {
-            for (int column = 0; column < Table[row].length; column++)
-            {
-                int current = Table[row][column];
-
-                if (current != 1) // must be empty
-                    continue;
-
-                Table[row][column] = 2;
-            }
-        }
     }
 
     public void MakeHole(Coordinates hole)
     {
-        Table[hole.Y][hole.X] = 1;
+        Table[hole.Y][hole.X] = false;
     }
 
     public boolean Solve()
@@ -70,7 +57,7 @@ public class Board
         {
             for (int column = 0; column < Table[row].length; column++)
             {
-                if (Table[row][column] != 2) // must be peg
+                if (Table[row][column] != true) // must be peg
                     continue;
 
                 Coordinates pegCoordinates = new Coordinates(column, row);
@@ -82,11 +69,11 @@ public class Board
                 for (Move move : availableMoves)
                 {
                     moves.DoMove(pegCoordinates, move);
-                    int[][] stepTable = Main.Clone2DArray(Table);
+                    boolean[][] stepTable = Main.Clone2DArray(Table);
 
-                    if (_debug)
+                    if (_verbose)
                     {
-                        Main.PrintNewLine();
+                        System.out.println();
                         System.out.print(move.toString());
                         Main.PrintBoard(this);
                     }
@@ -98,11 +85,11 @@ public class Board
                     } else
                     {
                         int pegs = 0;
-                        for (int[] row2 : Table)
+                        for (boolean[] row2 : Table)
                         {
-                            for (int item : row2)
+                            for (boolean item : row2)
                             {
-                                if (item == 2)
+                                if (item == true) // is peg
                                     pegs++;
                             }
                         }
@@ -118,11 +105,11 @@ public class Board
 
                         moves.RevertMove(pegCoordinates, move);
 
-                        if (_debug)
+                        if (_verbose)
                         {
-                            Main.PrintNewLine();
-                            Main.PrintNewLine("DEAD MOVE! REVERTING.");
-                            Main.PrintNewLine();
+                            System.out.println();
+                            System.out.println("DEAD MOVE! REVERTING.");
+                            System.out.println();
                         }
                     }
                 }
@@ -133,7 +120,7 @@ public class Board
         return false;
     }
 
-    public List<int[][]> GetSteps()
+    public List<boolean[][]> GetSteps()
     {
         return _steps;
     }
@@ -178,16 +165,16 @@ public class Board
             Coordinates destination = new Coordinates(pegCoordinates.X - 2, pegCoordinates.Y - 2);
             Coordinates middlePoint = new Coordinates(pegCoordinates.X - 1, pegCoordinates.Y - 1);
 
-            if (destination.X < 0 || destination.X >= Table[0].length) // out of bounds on X axis
+            if (destination.X < 0 || destination.X > destination.Y) // out of bounds on X axis
                 return false;
 
             if (destination.Y < 0 || destination.Y >= Table.length) // out of bounds on Y axis
                 return false;
 
-            if (Table[destination.Y][destination.X] != 1) // not empty destination
+            if (Table[destination.Y][destination.X] != false) // not empty destination
                 return false;
 
-            if (Table[middlePoint.Y][middlePoint.X] != 2) // cannot jump over empty points
+            if (Table[middlePoint.Y][middlePoint.X] != true) // cannot jump over empty points
                 return false;
 
             return true;
@@ -195,19 +182,19 @@ public class Board
 
         public boolean CanMoveUpRight(Coordinates pegCoordinates)
         {
-            Coordinates destination = new Coordinates(pegCoordinates.X + 2, pegCoordinates.Y - 2);
-            Coordinates middlePoint = new Coordinates(pegCoordinates.X + 1, pegCoordinates.Y - 1);
+            Coordinates destination = new Coordinates(pegCoordinates.X, pegCoordinates.Y - 2);
+            Coordinates middlePoint = new Coordinates(pegCoordinates.X, pegCoordinates.Y - 1);
 
-            if (destination.X < 0 || destination.X >= Table[0].length) // out of bounds on X axis
+            if (destination.X < 0 || destination.X > destination.Y) // out of bounds on X axis
                 return false;
 
             if (destination.Y < 0 || destination.Y >= Table.length) // out of bounds on Y axis
                 return false;
 
-            if (Table[destination.Y][destination.X] != 1) // not empty destination
+            if (Table[destination.Y][destination.X] != false) // not empty destination
                 return false;
 
-            if (Table[middlePoint.Y][middlePoint.X] != 2) // cannot jump over empty points
+            if (Table[middlePoint.Y][middlePoint.X] != true) // cannot jump over empty points
                 return false;
 
             return true;
@@ -215,19 +202,19 @@ public class Board
 
         public boolean CanMoveLeft(Coordinates pegCoordinates)
         {
-            Coordinates destination = new Coordinates(pegCoordinates.X - 4, pegCoordinates.Y);
-            Coordinates middlePoint = new Coordinates(pegCoordinates.X - 2, pegCoordinates.Y);
+            Coordinates destination = new Coordinates(pegCoordinates.X - 2, pegCoordinates.Y);
+            Coordinates middlePoint = new Coordinates(pegCoordinates.X - 1, pegCoordinates.Y);
 
-            if (destination.X < 0 || destination.X >= Table[0].length) // out of bounds on X axis
+            if (destination.X < 0 || destination.X > destination.Y) // out of bounds on X axis
                 return false;
 
             if (destination.Y < 0 || destination.Y >= Table.length) // out of bounds on Y axis
                 return false;
 
-            if (Table[destination.Y][destination.X] != 1) // not empty destination
+            if (Table[destination.Y][destination.X] != false) // not empty destination
                 return false;
 
-            if (Table[middlePoint.Y][middlePoint.X] != 2) // cannot jump over empty points
+            if (Table[middlePoint.Y][middlePoint.X] != true) // cannot jump over empty points
                 return false;
 
             return true;
@@ -235,19 +222,19 @@ public class Board
 
         public boolean CanMoveRight(Coordinates pegCoordinates)
         {
-            Coordinates destination = new Coordinates(pegCoordinates.X + 4, pegCoordinates.Y);
-            Coordinates middlePoint = new Coordinates(pegCoordinates.X + 2, pegCoordinates.Y);
+            Coordinates destination = new Coordinates(pegCoordinates.X + 2, pegCoordinates.Y );
+            Coordinates middlePoint = new Coordinates(pegCoordinates.X + 1, pegCoordinates.Y);
 
-            if (destination.X < 0 || destination.X >= Table[0].length) // out of bounds on X axis
+            if (destination.X < 0 || destination.X > destination.Y) // out of bounds on X axis
                 return false;
 
             if (destination.Y < 0 || destination.Y >= Table.length) // out of bounds on Y axis
                 return false;
 
-            if (Table[destination.Y][destination.X] != 1) // not empty destination
+            if (Table[destination.Y][destination.X] != false) // not empty destination
                 return false;
 
-            if (Table[middlePoint.Y][middlePoint.X] != 2) // cannot jump over empty points
+            if (Table[middlePoint.Y][middlePoint.X] != true) // cannot jump over empty points
                 return false;
 
             return true;
@@ -255,19 +242,19 @@ public class Board
 
         public boolean CanMoveDownLeft(Coordinates pegCoordinates)
         {
-            Coordinates destination = new Coordinates(pegCoordinates.X - 2, pegCoordinates.Y + 2);
-            Coordinates middlePoint = new Coordinates(pegCoordinates.X - 1, pegCoordinates.Y + 1);
+            Coordinates destination = new Coordinates(pegCoordinates.X, pegCoordinates.Y + 2);
+            Coordinates middlePoint = new Coordinates(pegCoordinates.X, pegCoordinates.Y + 1);
 
-            if (destination.X < 0 || destination.X >= Table[0].length) // out of bounds on X axis
+            if (destination.X < 0 || destination.X > destination.Y) // out of bounds on X axis
                 return false;
 
             if (destination.Y < 0 || destination.Y >= Table.length) // out of bounds on Y axis
                 return false;
 
-            if (Table[destination.Y][destination.X] != 1) // not empty destination
+            if (Table[destination.Y][destination.X] != false) // not empty destination
                 return false;
 
-            if (Table[middlePoint.Y][middlePoint.X] != 2) // cannot jump over empty points
+            if (Table[middlePoint.Y][middlePoint.X] != true) // cannot jump over empty points
                 return false;
 
             return true;
@@ -278,16 +265,16 @@ public class Board
             Coordinates destination = new Coordinates(pegCoordinates.X + 2, pegCoordinates.Y + 2);
             Coordinates middlePoint = new Coordinates(pegCoordinates.X + 1, pegCoordinates.Y + 1);
 
-            if (destination.X < 0 || destination.X >= Table[0].length) // out of bounds on X axis
+            if (destination.X < 0 || destination.X > destination.Y) // out of bounds on X axis
                 return false;
 
             if (destination.Y < 0 || destination.Y >= Table.length) // out of bounds on Y axis
                 return false;
 
-            if (Table[destination.Y][destination.X] != 1) // not empty destination
+            if (Table[destination.Y][destination.X] != false) // not empty destination
                 return false;
 
-            if (Table[middlePoint.Y][middlePoint.X] != 2) // cannot jump over empty points
+            if (Table[middlePoint.Y][middlePoint.X] != true) // cannot jump over empty points
                 return false;
 
             return true;
@@ -297,115 +284,101 @@ public class Board
         {
             if (move == Move.UPLEFT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 1;
-                Table[pegCoordinates.Y - 1][pegCoordinates.X - 1] = 1;
-                Table[pegCoordinates.Y - 2][pegCoordinates.X - 2] = 2;
+                Table[pegCoordinates.Y][pegCoordinates.X] = false;
+                Table[pegCoordinates.Y - 1][pegCoordinates.X - 1] = false;
+                Table[pegCoordinates.Y - 2][pegCoordinates.X - 2] = true;
                 return;
             }
 
             if (move == Move.UPRIGHT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 1;
-                Table[pegCoordinates.Y - 1][pegCoordinates.X + 1] = 1;
-                Table[pegCoordinates.Y - 2][pegCoordinates.X + 2] = 2;
+                Table[pegCoordinates.Y][pegCoordinates.X] = false;
+                Table[pegCoordinates.Y - 1][pegCoordinates.X] = false;
+                Table[pegCoordinates.Y - 2][pegCoordinates.X] = true;
                 return;
             }
 
             if (move == Move.LEFT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 1;
-                Table[pegCoordinates.Y][pegCoordinates.X - 2] = 1;
-                Table[pegCoordinates.Y][pegCoordinates.X - 4] = 2;
+                Table[pegCoordinates.Y][pegCoordinates.X] = false;
+                Table[pegCoordinates.Y][pegCoordinates.X - 1] = false;
+                Table[pegCoordinates.Y][pegCoordinates.X - 2] = true;
                 return;
             }
 
             if (move == Move.RIGHT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 1;
-                Table[pegCoordinates.Y][pegCoordinates.X + 2] = 1;
-                Table[pegCoordinates.Y][pegCoordinates.X + 4] = 2;
+                Table[pegCoordinates.Y][pegCoordinates.X] = false;
+                Table[pegCoordinates.Y][pegCoordinates.X + 1] = false;
+                Table[pegCoordinates.Y][pegCoordinates.X + 2] = true;
                 return;
             }
 
             if (move == Move.DOWNLEFT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 1;
-                Table[pegCoordinates.Y + 1][pegCoordinates.X - 1] = 1;
-                Table[pegCoordinates.Y + 2][pegCoordinates.X - 2] = 2;
+                Table[pegCoordinates.Y][pegCoordinates.X] = false;
+                Table[pegCoordinates.Y + 1][pegCoordinates.X ] = false;
+                Table[pegCoordinates.Y + 2][pegCoordinates.X] = true;
                 return;
             }
 
             if (move == Move.DOWNRIGHT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 1;
-                Table[pegCoordinates.Y + 1][pegCoordinates.X + 1] = 1;
-                Table[pegCoordinates.Y + 2][pegCoordinates.X + 2] = 2;
+                Table[pegCoordinates.Y][pegCoordinates.X] = false;
+                Table[pegCoordinates.Y + 1][pegCoordinates.X + 1] = false;
+                Table[pegCoordinates.Y + 2][pegCoordinates.X + 2] = true;
             }
         }
 
         public void RevertMove(Coordinates pegCoordinates, Move move)
         {
-            /* UpLeftJump
-
-            B 0 x 0 x
-            0 x 0 x 0
-            0 0 A 0 0
-
-             */
-
-            /* UpLeftJumpResult
-
-            A 0 x 0 x
-            0 1 0 x 0
-            0 0 1 0 0
-
-             */
+            //TODO: Save redundant method by transforming the main one to a toggle instead
 
             if (move == Move.UPLEFT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 2;
-                Table[pegCoordinates.Y - 1][pegCoordinates.X - 1] = 2;
-                Table[pegCoordinates.Y - 2][pegCoordinates.X - 2] = 1;
+                Table[pegCoordinates.Y][pegCoordinates.X] = true;
+                Table[pegCoordinates.Y - 1][pegCoordinates.X - 1] = true;
+                Table[pegCoordinates.Y - 2][pegCoordinates.X - 2] = false;
                 return;
             }
 
             if (move == Move.UPRIGHT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 2;
-                Table[pegCoordinates.Y - 1][pegCoordinates.X + 1] = 2;
-                Table[pegCoordinates.Y - 2][pegCoordinates.X + 2] = 1;
+                Table[pegCoordinates.Y][pegCoordinates.X] = true;
+                Table[pegCoordinates.Y - 1][pegCoordinates.X] = true;
+                Table[pegCoordinates.Y - 2][pegCoordinates.X] = false;
                 return;
             }
 
             if (move == Move.LEFT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 2;
-                Table[pegCoordinates.Y][pegCoordinates.X - 2] = 2;
-                Table[pegCoordinates.Y][pegCoordinates.X - 4] = 1;
+                Table[pegCoordinates.Y][pegCoordinates.X] = true;
+                Table[pegCoordinates.Y][pegCoordinates.X - 1] = true;
+                Table[pegCoordinates.Y][pegCoordinates.X - 2] = false;
                 return;
             }
 
             if (move == Move.RIGHT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 2;
-                Table[pegCoordinates.Y][pegCoordinates.X + 2] = 2;
-                Table[pegCoordinates.Y][pegCoordinates.X + 4] = 1;
+                Table[pegCoordinates.Y][pegCoordinates.X] = true;
+                Table[pegCoordinates.Y][pegCoordinates.X + 1] = true;
+                Table[pegCoordinates.Y][pegCoordinates.X + 2] = false;
                 return;
             }
 
             if (move == Move.DOWNLEFT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 2;
-                Table[pegCoordinates.Y + 1][pegCoordinates.X - 1] = 2;
-                Table[pegCoordinates.Y + 2][pegCoordinates.X - 2] = 1;
+                Table[pegCoordinates.Y][pegCoordinates.X] = true;
+                Table[pegCoordinates.Y + 1][pegCoordinates.X ] = true;
+                Table[pegCoordinates.Y + 2][pegCoordinates.X] = false;
                 return;
             }
 
             if (move == Move.DOWNRIGHT)
             {
-                Table[pegCoordinates.Y][pegCoordinates.X] = 2;
-                Table[pegCoordinates.Y + 1][pegCoordinates.X + 1] = 2;
-                Table[pegCoordinates.Y + 2][pegCoordinates.X + 2] = 1;
+                Table[pegCoordinates.Y][pegCoordinates.X] = true;
+                Table[pegCoordinates.Y + 1][pegCoordinates.X + 1] = true;
+                Table[pegCoordinates.Y + 2][pegCoordinates.X + 2] = false;
             }
         }
     }
