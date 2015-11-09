@@ -11,7 +11,7 @@ public class Main
     {
         System.out.println();
         System.out.println("-----====================================-----");
-        System.out.println("Peg Jump Solver v1.1   ~ViR");
+        System.out.println("Peg Jump Solver v1.11   ~ViR");
         System.out.println("-----====================================-----");
         System.out.println();
         System.out.println("Size of board:");
@@ -20,6 +20,7 @@ public class Main
 
         if (boardSize == -1)
             return;
+
         if (boardSize < 3)
         {
             System.err.println("Invalid input! Board size cannot be less than 3!");
@@ -123,12 +124,14 @@ public class Main
 
     public static void PrintSteps(Board board)
     {
-        List<boolean[][]> getSteps = board.GetSteps();
+        List<Step> steps = board.GetSteps();
 
-        for (int i = getSteps.size() - 1; i >= 0; i--)
+        for (int i = steps.size() - 1; i >= 0; i--)
         {
-            boolean[][] table = getSteps.get(i);
-            PrintTable(table);
+            Step step = steps.get(i);
+            System.out.println();
+            System.out.print(step.GetMove());
+            PrintTable(step.GetTable());
         }
     }
 
@@ -141,13 +144,19 @@ public class Main
     {
         System.out.println();
 
+        int spaces = table[0].length - 1;
+
         for (int i = 0; i < table.length; i++)
         {
             boolean[] row = table[i];
 
+            for (int u = 0; u < spaces; u++) // initial spacing
+                System.out.print(" ");
+
             for (int column = 0; column < row.length; column++)
             {
                 String value = " ";
+                System.out.print(value);
 
                 if (column <= i)
                 {
@@ -162,13 +171,8 @@ public class Main
             }
 
             System.out.println();
+            spaces--;
         }
-    }
-
-    public void PrintSequence(String string, int repeats)
-    {
-        for (int i = 0; i < repeats; i++)
-            System.out.print(string);
     }
 
     public static boolean[][] Clone2DArray(boolean[][] array)

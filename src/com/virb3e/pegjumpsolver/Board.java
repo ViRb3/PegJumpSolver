@@ -12,10 +12,11 @@ public class Board
         * * * *
         * * * * *
      */
+
     public boolean[][] Table; // row major in Java for ease of use
     public int BestRun = -1;
     private boolean _verbose = false;
-    private List<boolean[][]> _steps = new ArrayList<>();
+    private List<Step> _steps = new ArrayList<>();
 
     public Board(int size, Coordinates holeCoordinates, boolean verbose)
     {
@@ -45,7 +46,7 @@ public class Board
 
     public boolean Solve()
     {
-        _steps.add(Table);
+        _steps.add(new Step(Table, Move.INITIAL));
         return DoSolve();
     }
 
@@ -80,7 +81,7 @@ public class Board
 
                     if (DoSolve())
                     {
-                        _steps.add(stepTable);
+                        _steps.add(new Step(stepTable, move));
                         return true;
                     } else
                     {
@@ -99,7 +100,7 @@ public class Board
 
                         if (pegs < 2)
                         {
-                            _steps.add(stepTable);
+                            _steps.add(new Step(stepTable, move));
                             return true;
                         }
 
@@ -120,7 +121,7 @@ public class Board
         return false;
     }
 
-    public List<boolean[][]> GetSteps()
+    public List<Step> GetSteps()
     {
         return _steps;
     }
@@ -222,7 +223,7 @@ public class Board
 
         public boolean CanMoveRight(Coordinates pegCoordinates)
         {
-            Coordinates destination = new Coordinates(pegCoordinates.X + 2, pegCoordinates.Y );
+            Coordinates destination = new Coordinates(pegCoordinates.X + 2, pegCoordinates.Y);
             Coordinates middlePoint = new Coordinates(pegCoordinates.X + 1, pegCoordinates.Y);
 
             if (destination.X < 0 || destination.X > destination.Y) // out of bounds on X axis
@@ -317,7 +318,7 @@ public class Board
             if (move == Move.DOWNLEFT)
             {
                 Table[pegCoordinates.Y][pegCoordinates.X] = false;
-                Table[pegCoordinates.Y + 1][pegCoordinates.X ] = false;
+                Table[pegCoordinates.Y + 1][pegCoordinates.X] = false;
                 Table[pegCoordinates.Y + 2][pegCoordinates.X] = true;
                 return;
             }
@@ -369,7 +370,7 @@ public class Board
             if (move == Move.DOWNLEFT)
             {
                 Table[pegCoordinates.Y][pegCoordinates.X] = true;
-                Table[pegCoordinates.Y + 1][pegCoordinates.X ] = true;
+                Table[pegCoordinates.Y + 1][pegCoordinates.X] = true;
                 Table[pegCoordinates.Y + 2][pegCoordinates.X] = false;
                 return;
             }

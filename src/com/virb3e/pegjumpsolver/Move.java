@@ -7,5 +7,6 @@ public enum Move
     LEFT,
     RIGHT,
     DOWNLEFT,
-    DOWNRIGHT
+    DOWNRIGHT,
+    INITIAL
 }
